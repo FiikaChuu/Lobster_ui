@@ -5,8 +5,8 @@
  */
 
 :root {
-  /* Canvas & Surface — Warm Off-White */
-  --bg-canvas: #f4f5f7;
+  /* Canvas & Surface — Studio Grey matched directly to video background */
+  --bg-canvas: #cbc6c2;
   --bg-surface: #ffffff;
   --bg-surface-hover: #f9fafb;
   --bg-surface-active: #f0f1f3;

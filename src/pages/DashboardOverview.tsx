@@ -9,6 +9,7 @@ import { BentoAlertsList } from '../components/dashboard/BentoAlertsList';
 import { PondHeroVisualizer } from '../components/dashboard/PondHeroVisualizer';
 import { BentoStockMetricsCard } from '../components/dashboard/BentoStockMetricsCard';
 import { BentoControlsCard } from '../components/dashboard/BentoControlsCard';
+import pondVideoDefault from '../assets/pond 3d mute.mp4';
 
 interface DashboardOverviewProps {
   data: MonitoringSnapshot | null;
@@ -34,6 +35,7 @@ interface DashboardOverviewProps {
   onPondChange: (pondId: string) => void;
   onNavigateToWaterQuality?: () => void;
   onNavigateToAlerts?: () => void;
+  pondVideoSrc?: string;
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
@@ -59,7 +61,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   alertFeedback,
   onPondChange,
   onNavigateToWaterQuality,
-  onNavigateToAlerts
+  onNavigateToAlerts,
+  pondVideoSrc
 }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', gap: '8px' }}>
@@ -100,6 +103,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             onChartTimeRangeChange={onChartTimeRangeChange}
             onRefresh={onRefresh}
             isLoading={isLoading || isRefreshing}
+            videoSrc={pondVideoSrc || pondVideoDefault}
           />
         </div>
 

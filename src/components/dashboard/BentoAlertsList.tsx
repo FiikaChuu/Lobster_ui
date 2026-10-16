@@ -78,6 +78,18 @@ export const BentoAlertsList: React.FC<BentoAlertsListProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<AlertCategoryFilter>('all');
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (ev: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(ev.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   // 1. Gather all active environmental and system alerts
   const combinedAlerts = useMemo(() => {
@@ -183,25 +195,28 @@ export const BentoAlertsList: React.FC<BentoAlertsListProps> = ({
 
   return (
     <div className="bento-card bento-alerts-card">
-      {/* Header with Title and More/Ellipsis Menu Button */}
-      <div className="bento-card-header">
-        <h3 className="bento-card-title">Alerts ({filteredAlerts.length})</h3>
-        <div style={{ position: 'relative' }}>
+      {/* Header with Title, Badge, and Aligned More/Ellipsis Menu Button */}
+      <div className="bento-card-header alerts-card-header">
+        <div className="alerts-header-title-group">
+          <h3 className="bento-card-title">Alerts</h3>
+          <span className="alerts-count-badge">{filteredAlerts.length}</span>
+        </div>
+        <div className="alerts-menu-anchor" ref={menuRef}>
           <button
             type="button"
-            className="card-dot-btn"
+            className="card-dot-btn alerts-more-btn"
             onClick={() => setMenuOpen(!menuOpen)}
-            title="Menu Notifikasi"
-            aria-label="Menu Notifikasi"
+            title="Menu Opsi Alerts"
+            aria-label="Menu Opsi Alerts"
             aria-expanded={menuOpen}
           >
-            <MoreHorizontal size={14} />
+            <MoreHorizontal size={15} />
           </button>
           {menuOpen && (
-            <div className="card-dropdown-menu">
+            <div className="card-dropdown-menu alerts-dropdown-panel" role="menu">
               <button
                 type="button"
-                className="card-dropdown-item"
+                className="card-dropdown-item alerts-dropdown-action"
                 onClick={() => {
                   onNavigateToAlerts?.();
                   setMenuOpen(false);
@@ -210,8 +225,12 @@ export const BentoAlertsList: React.FC<BentoAlertsListProps> = ({
                 Pusat Peringatan Lengkap
               </button>
               {dismissedIds.size > 0 && (
-                <button type="button" className="card-dropdown-item" onClick={handleClearDismissed}>
-                  Reset Peringatan Ditutup
+                <button
+                  type="button"
+                  className="card-dropdown-item alerts-dropdown-action"
+                  onClick={handleClearDismissed}
+                >
+                  Reset Peringatan Ditutup ({dismissedIds.size})
                 </button>
               )}
             </div>

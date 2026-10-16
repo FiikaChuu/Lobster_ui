@@ -67,10 +67,18 @@
   color: var(--text-primary);
 }
 
+.range-pill-btn:active {
+  transform: scale(0.95);
+}
+
 .range-pill-btn.active {
   background: var(--accent-primary);
   color: var(--text-white);
   box-shadow: var(--shadow-sm);
+}
+
+.range-pill-btn.active:active {
+  transform: scale(0.95);
 }
 
 /* Parameter Selector Tabs */
@@ -98,9 +106,13 @@
 }
 
 .param-tab-btn:hover {
+  border-color: var(--border-medium);
   background: var(--bg-surface-hover);
   color: var(--text-primary);
-  border-color: var(--border-medium);
+}
+
+.param-tab-btn:active {
+  transform: scale(0.96);
 }
 
 .param-tab-btn.active {

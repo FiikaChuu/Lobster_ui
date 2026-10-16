@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { RefreshCw, BarChart2, Eye, ChevronDown, MapPin, Clock, Waves } from 'lucide-react';
 import type { ParameterKey, ParameterSummary, HistoricalDataPoint } from '../../types/sensor';
 import type { DashboardConnectionState } from '../../types/monitoring';
 import { TimeSeriesChart } from '../charts/TimeSeriesChart';
 import { PondWaterOverlay } from './PondWaterOverlay';
-import pondImg from '../../assets/pond_3d.jpg';
+import pondVideoMute from '../../assets/pond 3d mute.mp4';
+import pondPoster from '../../assets/pond_video_poster.jpg';
+import pondImg from '../../assets/pond_3d.png';
 
 interface PondOption {
   id: string;
@@ -23,6 +25,7 @@ interface PondHeroVisualizerProps {
   pondId: string;
   pondName?: string;
   speciesName?: string;
+  videoSrc?: string;
   parameters?: Record<ParameterKey, ParameterSummary>;
   chartHistory: Record<ParameterKey, HistoricalDataPoint[]>;
   chartTimeRange: '1h' | '24h' | '7d';
@@ -38,6 +41,7 @@ export const PondHeroVisualizer: React.FC<PondHeroVisualizerProps> = ({
   pondId,
   pondName,
   speciesName,
+  videoSrc,
   parameters: _parameters,
   chartHistory,
   chartTimeRange,
@@ -49,6 +53,20 @@ export const PondHeroVisualizer: React.FC<PondHeroVisualizerProps> = ({
   dataProvider = 'demo'
 }) => {
   const [viewMode, setViewMode] = useState<'3d' | 'chart'>('3d');
+  const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const activeVideoSrc = videoSrc || pondVideoMute;
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(() => {
+        // Autoplay handled
+      });
+    }
+  }, [activeVideoSrc]);
 
   const currentPond = POND_OPTIONS.find((p) => p.id === pondId) || POND_OPTIONS[0];
   const activeName = pondName && pondName !== 'Tambak A-01' ? pondName : currentPond.name;
@@ -94,24 +112,38 @@ export const PondHeroVisualizer: React.FC<PondHeroVisualizerProps> = ({
 
       {/* Main Pond Visual Area */}
       <div className="pond-visual-viewport">
-        {viewMode === '3d' ? (
-          <div className="pond-3d-wrapper">
-            <div className="pond-3d-scene-container">
-              {/* Seamless Atmospheric 3D Pond Image */}
+        {/* Persistent Background Video Layer: Always active so video silhouette/shadow remains when closed */}
+        <div className={`pond-3d-wrapper ${viewMode === 'chart' ? 'chart-mode-dimmed' : ''}`}>
+          <div className="pond-3d-scene-container">
+            {/* Primary Video Element with Poster & Fallback */}
+            {!videoError ? (
+              <video
+                ref={videoRef}
+                src={activeVideoSrc}
+                poster={pondPoster}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="pond-media-element pond-media-video"
+                onError={() => setVideoError(true)}
+                aria-label="Animasi Looping 3D Tambak Lobster"
+              />
+            ) : (
               <img
                 src={pondImg}
                 alt="Isometric 3D Lobster Pond"
-                className="pond-3d-image"
+                className="pond-media-element pond-media-image"
               />
+            )}
 
-              {/* Realistic Animated Water Surface, Caustics & Aerator Ripples */}
-              <PondWaterOverlay />
-
-              {/* Subtle Atmospheric Vignette Overlay */}
-              <div className="pond-3d-overlay" />
-            </div>
+            {/* Realistic Animated Water Surface, Caustics & Aerator Ripples (active as fallback) */}
+            {videoError && <PondWaterOverlay />}
           </div>
-        ) : (
+        </div>
+
+        {/* Chart View Overlay: Floats on top when chart mode is active, showing the video silhouette underneath */}
+        {viewMode === 'chart' && (
           <div className="pond-chart-wrapper">
             <TimeSeriesChart
               history={chartHistory}
@@ -123,11 +155,11 @@ export const PondHeroVisualizer: React.FC<PondHeroVisualizerProps> = ({
           </div>
         )}
 
-        {/* Floating Glassmorphism Dock (Cage and water visible softly through the glass) */}
-        <div className="pond-blend-bottom-bar">
+        {/* Seamless Glassmorphism Identity Dock (Flows across bottom of pond, no separate box) */}
+        <div className="pond-seamless-identity-overlay">
           <div className="pond-blend-left">
             <div className="pond-badge-avatar">
-              <Waves size={16} />
+              <Waves size={20} />
             </div>
 
             <div className="pond-blend-identity-text">
@@ -146,7 +178,7 @@ export const PondHeroVisualizer: React.FC<PondHeroVisualizerProps> = ({
                         </option>
                       ))}
                     </select>
-                    <ChevronDown size={14} className="pond-select-chevron" />
+                    <ChevronDown size={16} className="pond-select-chevron" />
                   </div>
                 ) : (
                   <h2 className="pond-seamless-title">{activeName}</h2>
@@ -167,8 +199,8 @@ export const PondHeroVisualizer: React.FC<PondHeroVisualizerProps> = ({
               <div className="pond-subspecies-text">{activeSpecies}</div>
 
               <div className="pond-meta-location-row">
-                <MapPin size={11} className="meta-pin-icon" />
-                <span>Tambak A01 - Situbondo, Jawa Timur</span>
+                <MapPin size={12} className="meta-pin-icon" />
+                <span>Tambak A01 — Situbondo, Jawa Timur</span>
               </div>
             </div>
           </div>
@@ -183,7 +215,7 @@ export const PondHeroVisualizer: React.FC<PondHeroVisualizerProps> = ({
 
             <div className="pond-metric-stat stat-update">
               <div className="pond-update-header">
-                <Clock size={11} />
+                <Clock size={12} />
                 <span>Terakhir Update</span>
               </div>
               <div className="pond-update-val">
@@ -196,3 +228,4 @@ export const PondHeroVisualizer: React.FC<PondHeroVisualizerProps> = ({
     </div>
   );
 };
+
